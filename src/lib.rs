@@ -27,6 +27,39 @@ impl Plotter {
             self.ctx.canvas.set_pixel(px as usize, py as usize, color);
         }
     }
+
+    fn draw_mandelbrot(&mut self, max_iter: usize, color_name: Option<&str>) {
+        let color = parse_color(color_name);
+        let w_px = self.ctx.canvas.width * 2;
+        let h_px = self.ctx.canvas.height * 4;
+        
+        // Rangos del plano complejo para Mandelbrot
+        let x_min = -2.0; let x_max = 1.0;
+        let y_min = -1.2; let y_max = 1.2;
+
+        for py in 0..h_px {
+            for px in 0..w_px {
+                let x0 = x_min + (px as f64 / w_px as f64) * (x_max - x_min);
+                let y0 = y_min + (py as f64 / h_px as f64) * (y_max - y_min);
+                
+                let mut x = 0.0;
+                let mut y = 0.0;
+                let mut iteration = 0;
+                
+                while x*x + y*y <= 4.0 && iteration < max_iter {
+                    let xtemp = x*x - y*y + x0;
+                    y = 2.0*x*y + y0;
+                    x = xtemp;
+                    iteration += 1;
+                }
+                
+                if iteration == max_iter {
+                    self.ctx.canvas.set_pixel(px, py, color);
+                }
+            }
+        }
+    }
+
     // --- MÉTODOS PARA NUMPY (Ultra rápidos) ---
     fn line_chart_np(&mut self, x: PyReadonlyArray1<f64>, y: PyReadonlyArray1<f64>, color_name: Option<&str>) {
         let x_view = x.as_array();
